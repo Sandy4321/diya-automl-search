@@ -92,5 +92,5 @@ if __name__ == '__main__':
     # here so that the script will run successfully regardless of the
     # current working directory.
     local_dir = os.path.dirname(__file__)
-    config_path = os.path.join(local_dir, 'neat_config_cnn.txt')
+    config_path = os.path.join(local_dir, 'neat_config_mnist.txt')
     run(config_path)
