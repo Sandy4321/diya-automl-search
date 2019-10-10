@@ -9,5 +9,6 @@ setup(
         'sklearn',
         'tensorboardX',
         'termcolor',
+        'neat-python',
     ]
 )
