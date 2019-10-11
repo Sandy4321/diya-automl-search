@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(
-    name="automl-prune",
+    name="automl-search",
     install_requires=[
         'torch',
         'torchvision',

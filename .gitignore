@@ -3,8 +3,10 @@ build/
 *.egg-info/
 __pycache__/
 .vscode/
-
+*.swp
+*.swo
 *.npy
+
 data/
 logs/
 checkpoints/
