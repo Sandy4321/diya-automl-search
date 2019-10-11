@@ -12,7 +12,8 @@ from trainer import Trainer
 
 
 def test(args):
-    print('test')
+    from genomes.genome import Genome
+    Genome('genomes/lenet.txt')
 
 
 if __name__ == "__main__":
