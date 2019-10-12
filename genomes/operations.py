@@ -21,15 +21,29 @@ class Identity(nn.Module):
         return x
 
 
-def identity(D, C, ks):
+class MultiheadAttention(nn.Module):
+    def __init__(self, embed_dim, num_heads):
+        super().__init__()
+        self.attn = nn.MultiheadAttention(embed_dim, num_heads)
+
+    def forward(self, x):
+        assert len(x.size()) == 3
+        x = x.transpose(0, 1)
+        out, _ = self.attn(x, x, x)
+        return out.transpose(0, 1)
+
+
+def identity(size, ks):
     return Identity()
 
 
-def none(D, C, ks):
+def none(size, ks):
     return Zero()
 
 
-def sep_conv(D, C, ks):
+def sep_conv(size, ks):
+    C = size[0]
+    D = len(size) - 1
     if D == 1:
         return nn.Sequential(
             nn.Conv1d(C, C, ks, padding=ks//2, groups=C),
@@ -44,7 +58,9 @@ def sep_conv(D, C, ks):
         raise NotImplementedError
 
 
-def dil_conv(D, C, ks):
+def dil_conv(size, ks):
+    C = size[0]
+    D = len(size) - 1
     if D == 1:
         return nn.Sequential(
             nn.Conv1d(C, C, ks, padding=ks - 1, dilation=2, groups=C),
@@ -59,7 +75,8 @@ def dil_conv(D, C, ks):
         raise NotImplementedError
 
 
-def max_pool(D, C, ks):
+def max_pool(size, ks):
+    D = len(size) - 1
     if D == 1:
         return nn.MaxPool1d(ks, padding=ks//2)
     elif D == 2:
@@ -68,7 +85,8 @@ def max_pool(D, C, ks):
         raise NotImplementedError
 
 
-def avg_pool(D, C, ks):
+def avg_pool(size, ks):
+    D = len(size) - 1
     if D == 1:
         return nn.AvgPool1d(ks, padding=ks//2, count_include_pad=False)
     elif D == 2:
@@ -77,8 +95,10 @@ def avg_pool(D, C, ks):
         raise NotImplementedError
 
 
-def attention(D, C, ks):
+def attention(size, ks):
+    C = size[-1]
+    D = len(size) - 1
     if D == 1:
-        return nn.MultiHeadAttention(C, 8)
+        return MultiheadAttention(C, 8)
     else:
         raise NotImplementedError
