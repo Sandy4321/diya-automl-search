@@ -20,7 +20,8 @@ KERNEL_SIZE = {
 ACTIVATIONS = {
     '0': nn.ReLU(),
     '1': nn.Sigmoid(),
-    '2': nn.Tanh()
+    '2': nn.Tanh(),
+    '3': ops.Identity()
 }
 
 
