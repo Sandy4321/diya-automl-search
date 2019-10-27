@@ -65,6 +65,7 @@ class CNNCell(nn.Module):
     }
     ACTIVATIONS = {
         '0': nn.ReLU(),
+        '3': ops.Identity()
     }
 
     def __init__(self, size, genome):
@@ -108,7 +109,8 @@ class RNNCell(CNNCell):
     ACTIVATIONS = {
         '0': nn.ReLU(),
         '1': nn.Sigmoid(),
-        '2': nn.Tanh()
+        '2': nn.Tanh(),
+        '3': ops.Identity()
     }
 
     def forward(self, x, h):
@@ -138,5 +140,6 @@ class TransformerCell(CNNCell):
     ACTIVATIONS = {
         '0': nn.ReLU(),
         '1': nn.Sigmoid(),
-        '2': nn.Tanh()
+        '2': nn.Tanh(),
+        '3': ops.Identity()
     }
