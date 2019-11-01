@@ -1,6 +1,7 @@
 import os
 import neat
 from AutoML_genome import AutoML_Genome
+<<<<<<< HEAD
 
 
 def model_info(genome):
@@ -42,6 +43,8 @@ def make_genome(genome):
 xor_inputs = [(0.0,), (0.0,), (1.0,), (1.0,)]
 xor_outputs = [(0.0,), (1.0,), (1.0,), (0.0,)]
 
+=======
+>>>>>>> Fix genome making function
 
 
 def model_info(genome):
@@ -49,12 +52,13 @@ def model_info(genome):
     connection_info = {}
 
     node_len = len(list(genome.nodes.keys()))
-    for key in list(genome.nodes.keys()) :
+    for key in list(genome.nodes.keys()):
         if key == 0:
             node_info[-1] = [genome.nodes[0].operation[:-2], genome.nodes[0].operation[-1], genome.nodes[0].activation ]
+            node_info[0] = [genome.nodes[0].operation[:-2], genome.nodes[0].operation[-1], genome.nodes[0].activation ]
         else:
             node_info[key] = [genome.nodes[key].operation[:-2], genome.nodes[key].operation[-1], genome.nodes[key].activation ]
-    for a,b in list(genome.connections.keys()) : 
+    for a,b in list(genome.connections.keys()): 
         if b not in list(connection_info.keys()):
             connection_info[b] = [a]
         else:
@@ -65,21 +69,22 @@ def make_genome(genome):
     index = sorted(list(connection_info.keys()))
     new_genome = []
     for idx in index:
-        if len(connection_info[idx]) >= 2 :
-            connection_info[idx] = sorted(connection_info[idx])[-2:]
-            in_idx1 = connection_info[idx][0]
-            in_idx2 = connection_info[idx][1]
-            new_genome.append([in_idx1,'i',node_info[in_idx1][0],node_info[in_idx1][1],node_info[in_idx1][2], in_idx2,'i',node_info[in_idx2][0],node_info[in_idx2][1],node_info[in_idx2][2]])
-        else:
-            in_idx1 = connection_info[idx][0]
-            new_genome.append([in_idx1,'i',node_info[in_idx1][0],node_info[in_idx1][1],node_info[in_idx1][2], 'none', 'i', 'none', 'none', 'none'])
-    return new_genome
+      connection_info[idx] = sorted(connection_info[idx])
+   
+      for node_idx in range(len(connection_info[idx]) // 2):
+        in_idx1 = connection_info[idx][2*node_idx]
+        in_idx2 = connection_info[idx][2*node_idx + 1]
+        new_genome.append([in_idx1,'i',node_info[in_idx1][0],node_info[in_idx1][1],node_info[in_idx1][2], in_idx2,'i',node_info[in_idx2][0],node_info[in_idx2][1],node_info[in_idx2][2]])        
 
+      if len(connection_info[idx]) % 2  == 1 :
+        in_idx1 = connection_info[idx][-1]
+        new_genome.append([in_idx1,'i',node_info[in_idx1][0],node_info[in_idx1][1],node_info[in_idx1][2], 'none', 'i', 'none', 'none', 'none'])
+    return new_genome
 
 
 # 2-input XOR inputs and expected outputs.
 xor_inputs = [(0.0,), (0.0,), (1.0,), (1.0,)]
-xor_outputs = [   (0.0,),     (1.0,),     (1.0,),     (0.0,)]
+xor_outputs = [(0.0,), (1.0,), (1.0,), (0.0,)]
 
 
 def eval_genomes(genomes, config):
