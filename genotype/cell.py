@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-import genomes.operations as ops
+import genotype.operations as ops
 
 IDX_SEP = 'i'
 AGGREGATIONS = {

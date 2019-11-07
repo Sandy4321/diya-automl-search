@@ -1,16 +1,18 @@
 from neat.genes import BaseGene
-from neat.attributes import FloatAttribute, StringAttribute
-from genomes.cell import CNNCell, RNNCell, TransformerCell
+from neat.attributes import StringAttribute
+from genotype.cell import CNNCell, RNNCell, TransformerCell
 
 
 def get_attributes(cell):
+    # Remove 'none' from operations
+    operations = list(cell.OPERATIONS.keys())
+    if '6' in operations:
+        operations.remove('6')
     return [
-        FloatAttribute('bias'),
-        FloatAttribute('response'),
-        StringAttribute('aggregation', options=cell.AGGREGATIONS.values()),
-        StringAttribute('operation', options=cell.OPERATIONS.values()),
-        StringAttribute('kernel_size', options=cell.KERNEL_SIZE.values()),
-        StringAttribute('activation', options=cell.ACTIVATIONS.values()),
+        StringAttribute('aggregation', options=cell.AGGREGATIONS.keys()),
+        StringAttribute('operation', options=operations),
+        StringAttribute('kernel_size', options=cell.KERNEL_SIZE.keys()),
+        StringAttribute('activation', options=cell.ACTIVATIONS.keys()),
     ]
 
 
