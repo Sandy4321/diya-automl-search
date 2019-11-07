@@ -3,6 +3,10 @@ import torch.nn as nn
 import genomes.operations as ops
 
 IDX_SEP = 'i'
+AGGREGATIONS = {
+    '0': 'sum',
+    '1': 'product'
+}
 OPERATIONS = {
     '0': 'sep_conv',
     '1': 'dil_conv',
@@ -26,15 +30,15 @@ ACTIVATIONS = {
 
 
 class Node(nn.Module):
-    def __init__(self, size, op1, op2):
+    def __init__(self, size, agg, op1, op2):
         super().__init__()
+        self.agg = AGGREGATIONS[agg]
         self.norm1 = nn.LayerNorm(size)
         ks = KERNEL_SIZE[op1[1]]
         self.op1 = nn.Sequential(
             getattr(ops, OPERATIONS[op1[0]])(size, ks),
             ACTIVATIONS[op1[2]]
         )
-
         self.norm2 = nn.LayerNorm(size)
         ks = KERNEL_SIZE[op2[1]]
         self.op2 = nn.Sequential(
@@ -42,14 +46,22 @@ class Node(nn.Module):
             ACTIVATIONS[op2[2]]
         )
 
-    def forward(self, x1, x2, enc=None):
+    def forward(self, x1, x2):
         out1 = self.op1(self.norm1(x1))
         out2 = self.op2(self.norm2(x2))
-        return out1 + out2
+        if self.agg == 'sum':
+            return out1 + out2
+        elif self.agg == 'product':
+            return out1*out2
+        else:
+            raise NotImplementedError
 
 
 class CNNCell(nn.Module):
     D = 2
+    AGGREGATIONS = {
+        '0': 'sum',
+    }
     OPERATIONS = {
         '0': 'sep_conv',
         '1': 'dil_conv',
@@ -74,13 +86,14 @@ class CNNCell(nn.Module):
         self.idx = []
         self.nodes = nn.ModuleList([])
         for seq in genome:
+            agg, seq = seq[0], seq[1:]
             idx1, seq = seq.split(IDX_SEP, 1)
             op1, seq = seq[:3], seq[3:]
             idx2, op2 = seq.split(IDX_SEP, 1)
-            self.check_ops(op1, op2)
+            self.check_ops(agg, op1, op2)
 
             self.idx.append((int(idx1), int(idx2)))
-            self.nodes.append(Node(size, op1, op2))
+            self.nodes.append(Node(size, agg, op1, op2))
 
     def forward(self, x):
         outs = [x]
@@ -89,7 +102,8 @@ class CNNCell(nn.Module):
             outs.append(out)
         return out
 
-    def check_ops(self, *ops):
+    def check_ops(self, agg, *ops):
+        assert agg in self.AGGREGATIONS.keys()
         for op in ops:
             assert op[0] in self.OPERATIONS.keys()
             assert op[1] in self.KERNEL_SIZE.keys()
@@ -98,6 +112,10 @@ class CNNCell(nn.Module):
 
 class RNNCell(CNNCell):
     D = 1
+    AGGREGATIONS = {
+        '0': 'sum',
+        '1': 'product'
+    }
     OPERATIONS = {
         '0': 'sep_conv',
         '5': 'identity',
@@ -125,6 +143,9 @@ class RNNCell(CNNCell):
 
 class TransformerCell(CNNCell):
     D = 1
+    AGGREGATIONS = {
+        '0': 'sum',
+    }
     OPERATIONS = {
         '0': 'sep_conv',
         '1': 'dil_conv',
