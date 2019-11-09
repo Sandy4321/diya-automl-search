@@ -24,7 +24,7 @@ def test(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="AutoML Meetup")
     parser.add_argument("--load_config", type=str)
-    parser.add_argument("--tag", type=str, default='test')
+    parser.add_argument("--tag", type=str, default=None)
     parser.add_argument("--mode", type=str, default='test')
     parser.add_argument("--seed", type=str, default=100)
 
@@ -60,6 +60,8 @@ if __name__ == "__main__":
     torch.manual_seed(args.seed)
     torch.cuda.manual_seed(args.seed)
 
+    if args.tag is None:
+        args.tag = args.mode
     args.device = 'cuda' if torch.cuda.is_available() else 'cpu'
     if args.debug:
         args.log_level = 1
