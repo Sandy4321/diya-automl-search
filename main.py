@@ -8,13 +8,17 @@ from settings import PROJECT_ROOT
 from utils.common import ArgumentParser
 
 
-def test(args):
+def neat_transformer(args):
     from envs import imdb_glove50d
     from methods.neat import NEAT
 
     env = imdb_glove50d(args)
     neat = NEAT('transformer', env, args)
     neat.search()
+
+
+def test(args):
+    pass
 
 
 if __name__ == "__main__":
