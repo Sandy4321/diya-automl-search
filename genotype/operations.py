@@ -78,9 +78,9 @@ def dil_conv(size, ks):
 def max_pool(size, ks):
     D = len(size) - 1
     if D == 1:
-        return nn.MaxPool1d(ks, padding=ks//2)
+        return nn.MaxPool1d(ks, 1, padding=ks//2)
     elif D == 2:
-        return nn.MaxPool2d(ks, padding=ks//2)
+        return nn.MaxPool2d(ks, 1, padding=ks//2)
     else:
         raise NotImplementedError
 
@@ -88,9 +88,9 @@ def max_pool(size, ks):
 def avg_pool(size, ks):
     D = len(size) - 1
     if D == 1:
-        return nn.AvgPool1d(ks, padding=ks//2, count_include_pad=False)
+        return nn.AvgPool1d(ks, 1, padding=ks//2, count_include_pad=False)
     elif D == 2:
-        return nn.AvgPool2d(ks, padding=ks//2, count_include_pad=False)
+        return nn.AvgPool2d(ks, 1, padding=ks//2, count_include_pad=False)
     else:
         raise NotImplementedError
 

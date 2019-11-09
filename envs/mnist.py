@@ -1,5 +1,7 @@
 import os
+import numpy as np
 from torch.utils.data import DataLoader
+from torch.utils.data.sampler import SubsetRandomSampler
 import torchvision.datasets as datasets
 import torchvision.transforms as transforms
 
@@ -19,11 +21,22 @@ class MNIST(datasets.MNIST):
 
 def mnist(args):
     root = os.path.join(PROJECT_ROOT, DATA_DIR)
+    num_train = 60000
+    indices = list(range(num_train))
+    split = int(np.floor(args.split_ratio*num_train))
     return {
         'size': (1, 28, 28),
         'num_classes': 10,
         'train': DataLoader(
             MNIST(root, train=True),
+            sampler=SubsetRandomSampler(indices[:split]),
+            batch_size=args.batch_size,
+            num_workers=args.num_workers,
+            drop_last=True
+        ),
+        'val': DataLoader(
+            MNIST(root, train=True),
+            sampler=SubsetRandomSampler(indices[split:]),
             batch_size=args.batch_size,
             num_workers=args.num_workers,
             drop_last=True

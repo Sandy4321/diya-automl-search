@@ -11,7 +11,7 @@ class ArgumentParser(dict):
 def save_model(model, path):
     pth = {
         'model': model,
-        'checkpoint': model.state_dict()
+        'checkpoint': model.state_dict(),
     }
     torch.save(pth, path)
 

@@ -58,7 +58,7 @@ class Node(nn.Module):
 
 
 class CNNCell(nn.Module):
-    D = 2
+    D = 3
     AGGREGATIONS = {
         '0': 'sum',
     }
@@ -82,7 +82,7 @@ class CNNCell(nn.Module):
 
     def __init__(self, size, genome):
         super().__init__()
-        assert len(size) - 1 == self.D
+        assert len(size) == self.D
         self.idx = []
         self.nodes = nn.ModuleList([])
         for seq in genome:
@@ -138,11 +138,11 @@ class RNNCell(CNNCell):
             out = node(outs[idx1], outs[idx2])
             outs.append(out)
         out, h = torch.chunk(out, 2, dim=-1)
-        return out
+        return out, h
 
 
 class TransformerCell(CNNCell):
-    D = 1
+    D = 2
     AGGREGATIONS = {
         '0': 'sum',
     }

@@ -17,39 +17,33 @@ def get_attributes(cell):
 
 
 class CNNGene(BaseGene):
-    def __init__(self, key):
-        super().__init__(key)
-        self._gene_attributes = get_attributes(CNNCell)
+    _gene_attributes = get_attributes(CNNCell)
 
     def distance(self, other, config):
-        d = super().distance(other, config)
         if (self.operation != other.operation or
                 self.kernel_size != other.kernel_size):
-            d += 1.0*config.compatibility_weight_coefficient
-        return d
+            return 1.0*config.compatibility_weight_coefficient
+        else:
+            return 0.0
 
 
 class RNNGene(BaseGene):
-    def __init__(self, key):
-        super().__init__(key)
-        self._gene_attributes = get_attributes(RNNCell)
+    _gene_attributes = get_attributes(RNNCell)
 
     def distance(self, other, config):
-        d = super().distance(other, config)
         if (self.aggregation != other.aggregation or
                 self.operation != other.operation):
-            d += 1.0*config.compatibility_weight_coefficient
-        return d
+            return 1.0*config.compatibility_weight_coefficient
+        else:
+            return 0.0
 
 
 class TransformerGene(BaseGene):
-    def __init__(self, key):
-        super().__init__(key)
-        self._gene_attributes = get_attributes(TransformerCell)
+    _gene_attributes = get_attributes(TransformerCell)
 
     def distance(self, other, config):
-        d = super().distance(other, config)
         if (self.operation != other.operation or
                 self.kernel_size != other.kernel_size):
-            d += 1.0*config.compatibility_weight_coefficient
-        return d
+            return 1.0*config.compatibility_weight_coefficient
+        else:
+            return 0.0

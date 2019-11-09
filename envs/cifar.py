@@ -1,5 +1,7 @@
 import os
+import numpy as np
 from torch.utils.data import DataLoader
+from torch.utils.data.sampler import SubsetRandomSampler
 import torchvision.datasets as datasets
 import torchvision.transforms as transforms
 
@@ -30,14 +32,25 @@ class CIFAR10(datasets.CIFAR10):
 
 def cifar10(args):
     root = os.path.join(PROJECT_ROOT, DATA_DIR)
+    num_train = 50000
+    indices = list(range(num_train))
+    split = int(np.floor(args.split_ratio*num_train))
     return {
         'size': (3, 32, 32),
         'num_classes': 10,
         'train': DataLoader(
             CIFAR10(root, train=True),
+            sampler=SubsetRandomSampler(indices[:split]),
             batch_size=args.batch_size,
             num_workers=args.num_workers,
-            drop_last=True
+            drop_last=True,
+        ),
+        'val': DataLoader(
+            CIFAR10(root, train=True),
+            sampler=SubsetRandomSampler(indices[split:]),
+            batch_size=args.batch_size,
+            num_workers=args.num_workers,
+            drop_last=True,
         ),
         'test': DataLoader(
             CIFAR10(root, train=False),

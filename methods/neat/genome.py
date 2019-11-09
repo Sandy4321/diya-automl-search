@@ -47,12 +47,12 @@ def model_info(genome):
 
 
 def parse_info(node_idx, node_info, connection_info):
-    in_idx1 = connection_info[2*node_idx]
-    out = [in_idx1, IDX_SEP]
+    in_idx1 = connection_info[2*node_idx] + 1
+    out = [str(in_idx1), IDX_SEP]
     out += node_info[in_idx1][1:]
     if len(connection_info) % 2 == 0:
-        in_idx2 = connection_info[2*node_idx + 1]
-        out += [in_idx2, IDX_SEP]
+        in_idx2 = connection_info[2*node_idx + 1] + 1
+        out += [str(in_idx2), IDX_SEP]
         out += node_info[in_idx2][1:]
     else:
         out += ['0', IDX_SEP, '6', '0', '0']
@@ -65,8 +65,17 @@ def make_genome(genome):
     new_genome = []
     for idx in index:
         conn_info[idx] = sorted(conn_info[idx])
+        if len(conn_info[idx]) == 1:
+            agg = [node_info[idx][0]]
+            in_idx1 = conn_info[idx][0] + 1
+            ops = node_info[in_idx1][1:]
+            ops = [str(in_idx1), IDX_SEP, *ops]
+            ops += ['0', IDX_SEP, '6', '0', '0']
+            new_genome.append(''.join(agg + ops))
+
         for node_idx in range(len(conn_info[idx]) // 2):
             agg = [node_info[idx][0]]
             ops = parse_info(node_idx, node_info, conn_info[idx])
-            new_genome.append(agg + ops)
+            new_genome.append(''.join(agg + ops))
+
     return new_genome
