@@ -8,6 +8,15 @@ from settings import PROJECT_ROOT
 from utils.common import ArgumentParser
 
 
+def neat_cnn(args):
+    from envs import mnist
+    from methods.neat import NEAT
+
+    env = mnist(args)
+    neat = NEAT('cnn', env, args)
+    neat.search()
+
+
 def neat_transformer(args):
     from envs import imdb_glove50d
     from methods.neat import NEAT
@@ -32,6 +41,7 @@ if __name__ == "__main__":
     parser.add_argument("--log_level", type=int, default=20)
     parser.add_argument("--log_step", type=int, default=1)
     parser.add_argument("--debug", action="store_true")
+    parser.add_argument("-q", "--quiet", action="store_true")
 
     parser.add_argument_group("dataset options")
     parser.add_argument("--env", type=str)
@@ -62,8 +72,10 @@ if __name__ == "__main__":
 
     if args.tag is None:
         args.tag = args.mode
-    args.device = 'cuda' if torch.cuda.is_available() else 'cpu'
     if args.debug:
         args.log_level = 1
+    elif args.quiet:
+        args.log_level = 30
+    args.device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     globals()[args.mode](args)

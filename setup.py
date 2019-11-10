@@ -10,5 +10,6 @@ setup(
         'tensorboardX',
         'termcolor',
         'neat-python',
+        'networkx'
     ]
 )

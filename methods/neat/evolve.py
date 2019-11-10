@@ -64,7 +64,7 @@ class NEAT(Base):
     def eval_genomes(self, genomes, config):
         fitness = AverageMeter()
         for idx, (genome_id, genome) in enumerate(genomes):
-            cell = self.cell(self.size, make_genome(genome))
+            cell = self.cell(self.size, make_genome(genome)[:self.args.nodes])
             cells = nn.ModuleList([cell]*self.args.cells)
             model = self.network(self.stem, cells, self.classifier)
 
@@ -96,7 +96,7 @@ class NEAT(Base):
                 ))
                 info = {
                     'Generation': self.generations,
-                    'Epochs': self.args.epochs*(idx + 1)*(self.step + 1),
+                    'Epochs': self.args.epochs*(self.step + 1),
                     'Accuracy/Avg': fitness.avg,
                     'Accuracy/Best': self.best_fitness
                 }

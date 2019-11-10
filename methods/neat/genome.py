@@ -1,3 +1,4 @@
+import networkx as nx
 from neat.genome import DefaultGenome, DefaultGenomeConfig
 from neat.genes import DefaultConnectionGene
 from methods.neat.gene import CNNGene, RNNGene, TransformerGene
@@ -31,6 +32,7 @@ class TransformerGenome(DefaultGenome):
 def model_info(genome):
     node_info = {}
     connection_info = {}
+
     for k in list(genome.nodes.keys()):
         node_info[k] = [
             genome.nodes[k].aggregation,
@@ -39,43 +41,77 @@ def model_info(genome):
             genome.nodes[k].activation
         ]
     for a, b in list(genome.connections.keys()):
-        if b not in list(connection_info.keys()):
-            connection_info[b] = [a]
-        else:
-            connection_info[b].append(a)
+        if genome.connections[(a, b)].enabled:
+            if b not in list(connection_info.keys()):
+                connection_info[b] = [a]
+            else:
+                connection_info[b].append(a)
     return node_info, connection_info
-
-
-def parse_info(node_idx, node_info, connection_info):
-    in_idx1 = connection_info[2*node_idx] + 1
-    out = [str(in_idx1), IDX_SEP]
-    out += node_info[in_idx1][1:]
-    if len(connection_info) % 2 == 0:
-        in_idx2 = connection_info[2*node_idx + 1] + 1
-        out += [str(in_idx2), IDX_SEP]
-        out += node_info[in_idx2][1:]
-    else:
-        out += ['0', IDX_SEP, '6', '0', '0']
-    return out
 
 
 def make_genome(genome):
     node_info, conn_info = model_info(genome)
-    index = sorted(list(conn_info.keys()))
+    G = nx.DiGraph()
+    for u, vs in conn_info.items():
+        for v in vs:
+            G.add_edge(v, u)
+    if -1 not in G.nodes:
+        index = []
+    else:
+        v_remove = []
+        for v in G.nodes:
+            if not nx.has_path(G, -1, v):
+                v_remove.append(v)
+        G.remove_nodes_from(v_remove)
+        index = list(nx.topological_sort(G))
+
     new_genome = []
     for idx in index:
-        conn_info[idx] = sorted(conn_info[idx])
-        if len(conn_info[idx]) == 1:
-            agg = [node_info[idx][0]]
-            in_idx1 = conn_info[idx][0] + 1
-            ops = node_info[in_idx1][1:]
-            ops = [str(in_idx1), IDX_SEP, *ops]
-            ops += ['0', IDX_SEP, '6', '0', '0']
-            new_genome.append(''.join(agg + ops))
+        if idx in conn_info:
+            conn_info[idx] = sorted(conn_info[idx])
+            for node_idx in range(len(conn_info[idx]) // 2):
+                out = [node_info[idx][0]]
+                in_idx1 = conn_info[idx][2*node_idx]
+                if in_idx1 != -1 and in_idx1 in index:
+                    ops = node_info[in_idx1][1:]
+                    in_idx1 = index.index(in_idx1)
+                else:
+                    if in_idx1 == -1:
+                        ops = ['5', '0', '0']
+                    else:
+                        ops = ['6', '0', '0']
+                    in_idx1 = 0
+                out += [str(in_idx1), IDX_SEP, *ops]
 
-        for node_idx in range(len(conn_info[idx]) // 2):
-            agg = [node_info[idx][0]]
-            ops = parse_info(node_idx, node_info, conn_info[idx])
-            new_genome.append(''.join(agg + ops))
+                in_idx2 = conn_info[idx][2*node_idx + 1]
+                if in_idx2 != -1 and in_idx2 in index:
+                    ops = node_info[in_idx2][1:]
+                    in_idx2 = index.index(in_idx2)
+                else:
+                    if in_idx2 == -1:
+                        ops = ['5', '0', '0']
+                    else:
+                        ops = ['6', '0', '0']
+                    in_idx2 = 0
+                out += [str(in_idx2), IDX_SEP, *ops]
+
+                new_genome.append(''.join(out))
+
+            if len(conn_info[idx]) % 2 == 1:
+                out = [node_info[idx][0]]
+                in_idx1 = conn_info[idx][-1]
+                if in_idx1 != -1 and in_idx1 in index:
+                    ops = node_info[in_idx1][1:]
+                    in_idx1 = index.index(in_idx1)
+                else:
+                    if in_idx1 == -1:
+                        ops = ['5', '0', '0']
+                    else:
+                        ops = ['6', '0', '0']
+                    in_idx1 = 0
+                out += [str(in_idx1), IDX_SEP, *ops]
+                out += [str(0), IDX_SEP, '6', '0', '0']
+
+                new_genome.append(''.join(out))
 
     return new_genome
