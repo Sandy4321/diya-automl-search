@@ -73,6 +73,7 @@ class NEAT(Base):
                 trainer.train()
             trainer = Trainer(self.env['val'], model, self.args)
             trainer.infer()
+
             genome.fitness = trainer.info.avg['Accuracy/Top1']
             fitness.update(genome.fitness)
             if genome.fitness > self.best_fitness:

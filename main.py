@@ -17,6 +17,15 @@ def neat_cnn(args):
     neat.search()
 
 
+def neat_rnn(args):
+    from envs import imdb_glove50d
+    from methods.neat import NEAT
+
+    env = imdb_glove50d(args)
+    neat = NEAT('rnn', env, args)
+    neat.search()
+
+
 def neat_transformer(args):
     from envs import imdb_glove50d
     from methods.neat import NEAT
