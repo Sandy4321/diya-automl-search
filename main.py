@@ -13,11 +13,12 @@ from trainer import Trainer
 
 
 def resnet(args):
-    from envs import cifar10
+    from envs import mnist
     from genotype.cell import CNNCell
     from genotype.network import FeedForward
 
-    env = cifar10(args)
+    args.split_ratio = 1.0
+    env = mnist(args)
     path = os.path.join(PROJECT_ROOT, 'genotype', 'examples')
     filename = os.path.join(path, 'resnet.txt')
     with open(filename, 'r') as f:
@@ -54,6 +55,7 @@ def lstm(args):
     from genotype.cell import RNNCell
     from genotype.network import Recurrent
 
+    args.split_ratio = 0.99
     env = imdb_glove50d(args)
     path = os.path.join(PROJECT_ROOT, 'genotype', 'examples')
     filename = os.path.join(path, 'lstm.txt')
@@ -91,6 +93,7 @@ def transformer(args):
     from genotype.cell import TransformerCell
     from genotype.network import FeedForward
 
+    args.split_ratio = 0.99
     env = imdb_glove50d(args)
     path = os.path.join(PROJECT_ROOT, 'genotype', 'examples')
     filename = os.path.join(path, 'transformer.txt')
@@ -181,7 +184,7 @@ if __name__ == "__main__":
 
     parser.add_argument_group("training options")
     parser.add_argument("--epochs", type=int, default=10)
-    parser.add_argument("--lr", type=float, default=0.1)
+    parser.add_argument("--lr", type=float, default=1e-3)
     parser.add_argument("--momentum", type=float, default=0.9)
 
     args = parser.parse_args()

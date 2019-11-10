@@ -12,10 +12,9 @@ class Trainer:
         self.args = args
 
         self.criterion = nn.CrossEntropyLoss()
-        self.optimizer = torch.optim.SGD(
+        self.optimizer = torch.optim.Adam(
             model.parameters(),
             lr=args.lr,
-            momentum=args.momentum
         )
         self.epoch = 0
         self.step = 0
