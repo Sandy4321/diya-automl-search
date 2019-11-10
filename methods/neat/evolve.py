@@ -28,7 +28,7 @@ class NEAT(Base):
             self.network = FeedForward
         elif genome_type == 'rnn':
             genome = RNNGenome
-            self.size = tuple([args.dim])
+            self.size = tuple([args.dim, 1])
             self.stem = nn.Linear(env['size'][1], args.dim // 2)
             self.cell = RNNCell
             self.classifier = nn.Linear(

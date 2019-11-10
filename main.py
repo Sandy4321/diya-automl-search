@@ -4,8 +4,123 @@ import argparse
 import random
 import numpy as np
 import torch
+import torch.nn as nn
+
 from settings import PROJECT_ROOT
 from utils.common import ArgumentParser
+from utils.logger import Logger
+from trainer import Trainer
+
+
+def resnet(args):
+    from envs import cifar10
+    from genotype.cell import CNNCell
+    from genotype.network import FeedForward
+
+    env = cifar10(args)
+    path = os.path.join(PROJECT_ROOT, 'genotype', 'examples')
+    filename = os.path.join(path, 'resnet.txt')
+    with open(filename, 'r') as f:
+        genome = f.readlines()
+
+    size = tuple([args.dim, *env['size'][1:]])
+    stem = nn.Conv2d(env['size'][0], args.dim, 3, padding=1)
+    cells = nn.ModuleList([CNNCell(size, genome)]*args.cells)
+    classifier = nn.Linear(
+        args.dim*np.prod(env['size'][1:]),
+        env['num_classes']
+    )
+    model = FeedForward(stem, cells, classifier)
+
+    logger = Logger('MAIN', args=args)
+    logger.log("Begin training resnet-like network")
+    trainer = Trainer(env['train'], model, args)
+    for epoch in range(args.epochs):
+        trainer.train()
+        if epoch % args.log_step == 0:
+            logger.log("Training statistics for epoch: {}".format(epoch))
+            logger.scalar_summary(trainer.info.avg, epoch)
+            trainer.info.reset()
+
+    trainer = Trainer(env['test'], model, args)
+    trainer.infer()
+    logger.log("Validation accuracy: {}".format(
+        trainer.info.avg['Accuracy/Top1']
+    ))
+
+
+def lstm(args):
+    from envs import imdb_glove50d
+    from genotype.cell import RNNCell
+    from genotype.network import Recurrent
+
+    env = imdb_glove50d(args)
+    path = os.path.join(PROJECT_ROOT, 'genotype', 'examples')
+    filename = os.path.join(path, 'lstm.txt')
+    with open(filename, 'r') as f:
+        genome = f.readlines()
+
+    size = tuple([args.dim, 1])
+    stem = nn.Linear(env['size'][1], args.dim // 2)
+    cells = nn.ModuleList([RNNCell(size, genome)]*args.cells)
+    classifier = nn.Linear(
+                args.dim // 2,
+                env['num_classes']
+            )
+    model = Recurrent(stem, cells, classifier)
+
+    logger = Logger('MAIN', args=args)
+    logger.log("Begin training lstm-like network")
+    trainer = Trainer(env['train'], model, args)
+    for epoch in range(args.epochs):
+        trainer.train()
+        if epoch % args.log_step == 0:
+            logger.log("Training statistics for epoch: {}".format(epoch))
+            logger.scalar_summary(trainer.info.avg, epoch)
+            trainer.info.reset()
+
+    trainer = Trainer(env['test'], model, args)
+    trainer.infer()
+    logger.log("Validation accuracy: {}".format(
+        trainer.info.avg['Accuracy/Top1']
+    ))
+
+
+def transformer(args):
+    from envs import imdb_glove50d
+    from genotype.cell import TransformerCell
+    from genotype.network import FeedForward
+
+    env = imdb_glove50d(args)
+    path = os.path.join(PROJECT_ROOT, 'genotype', 'examples')
+    filename = os.path.join(path, 'transformer.txt')
+    with open(filename, 'r') as f:
+        genome = f.readlines()
+
+    size = tuple([env['size'][0], args.dim])
+    stem = nn.Linear(env['size'][1], args.dim)
+    cells = nn.ModuleList([TransformerCell(size, genome)]*args.cells)
+    classifier = nn.Linear(
+        args.dim*env['size'][0],
+        env['num_classes']
+    )
+    model = FeedForward(stem, cells, classifier)
+
+    logger = Logger('MAIN', args=args)
+    logger.log("Begin training transformer-like network")
+    trainer = Trainer(env['train'], model, args)
+    for epoch in range(args.epochs):
+        trainer.train()
+        if epoch % args.log_step == 0:
+            logger.log("Training statistics for epoch: {}".format(epoch))
+            logger.scalar_summary(trainer.info.avg, epoch)
+            trainer.info.reset()
+
+    trainer = Trainer(env['test'], model, args)
+    trainer.infer()
+    logger.log("Validation accuracy: {}".format(
+        trainer.info.avg['Accuracy/Top1']
+    ))
 
 
 def neat_cnn(args):
@@ -66,7 +181,7 @@ if __name__ == "__main__":
 
     parser.add_argument_group("training options")
     parser.add_argument("--epochs", type=int, default=10)
-    parser.add_argument("--lr", type=float, default=0.01)
+    parser.add_argument("--lr", type=float, default=0.1)
     parser.add_argument("--momentum", type=float, default=0.9)
 
     args = parser.parse_args()

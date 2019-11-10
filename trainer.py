@@ -22,7 +22,6 @@ class Trainer:
         self.info = EvaluationMetrics(
             [
                 'Epoch',
-                'Time/Total',
                 'Time/Step',
                 'Time/Item',
                 'Loss',
@@ -61,9 +60,8 @@ class Trainer:
         self.info.reset()
         self.model.eval()
         with torch.no_grad():
-            st = time.time()
             for data, labels in self.loader:
-                b_st = time.time()
+                st = time.time()
 
                 data = data.to(self.args.device)
                 labels = labels.to(self.args.device)
@@ -73,9 +71,8 @@ class Trainer:
                 top1 = (labels == preds).float().mean()
                 self.info.update('Accuracy/Top1', top1.item())
 
-                elapsed = time.time() - b_st
+                elapsed = time.time() - st
+                self.info.update('Time/Step', elapsed)
                 self.info.update('Time/Item', elapsed/len(data))
 
-        elapsed = time.time() - st
         self.info.update('Epoch', self.epoch)
-        self.info.update('Time/Total', elapsed)

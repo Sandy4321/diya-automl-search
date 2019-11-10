@@ -27,9 +27,11 @@ class Recurrent(nn.Module):
 
     def forward(self, x):
         xs = torch.transpose(self.stem(x), 0, 1)
+        xs = xs.view(*xs.shape, 1)
         h = torch.zeros_like(xs[0])
         for x in xs:
             for cell in self.cells:
                 out, _h = cell(x, h)
             h = _h.clone()
+        out = out.view(out.size(0), -1)
         return self.classifier(out)

@@ -111,7 +111,7 @@ class CNNCell(nn.Module):
 
 
 class RNNCell(CNNCell):
-    D = 1
+    D = 2
     AGGREGATIONS = {
         '0': 'sum',
         '1': 'product'
@@ -132,12 +132,12 @@ class RNNCell(CNNCell):
     }
 
     def forward(self, x, h):
-        x = torch.cat([x, h], dim=-1)
+        x = torch.cat([x, h], dim=1)
         outs = [x]
         for (idx1, idx2), node in zip(self.idx, self.nodes):
             out = node(outs[idx1], outs[idx2])
             outs.append(out)
-        out, h = torch.chunk(out, 2, dim=-1)
+        out, h = torch.chunk(out, 2, dim=1)
         return out, h
 
 
