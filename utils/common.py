@@ -23,8 +23,32 @@ def load_model(path):
     return model
 
 
-def get_params(model):
-    return filter(lambda p: p.requires_grad, model.parameters())
+def load_genome(genome, args):
+    assert args.type is not None
+    env = getattr(envs, args.env)(args)
+    if args.type == 'cnn':
+        size = tuple([args.dim, *env['size'][1:]])
+        stem = nn.Conv2d(env['size'][0], args.dim, 3, padding=1)
+        cells = nn.ModuleList(
+            [genotype.cell.CNNCell(size, genome)]*args.cells
+        )
+        classifier = nn.Linear(
+            args.dim*np.prod(env['size'][1:]),
+            env['num_classes']
+        )
+        return genotype.network.FeedForward(stem, cells, classifier)
+
+    elif args.type == 'rnn':
+        size = tuple([args.dim, 1])
+        stem = nn.Linear(env['size'][1], args.dim)
+        cells = nn.ModuleList(
+            [genotype.cell.RNNCell(size, genome)]*args.cells
+        )
+        classifier = nn.Linear(
+                    args.dim,
+                    env['num_classes']
+                )
+        return genotype.network.Recurrent(stem, cells, classifier)
 
 
 def get_bytes(model):

@@ -132,13 +132,11 @@ class RNNCell(CNNCell):
     }
 
     def forward(self, x, h):
-        x = torch.cat([x, h], dim=1)
-        outs = [x]
+        outs = [x, h]
         for (idx1, idx2), node in zip(self.idx, self.nodes):
             out = node(outs[idx1], outs[idx2])
             outs.append(out)
-        out, h = torch.chunk(out, 2, dim=1)
-        return out, h
+        return out
 
 
 class TransformerCell(CNNCell):

@@ -31,7 +31,6 @@ class Recurrent(nn.Module):
         h = torch.zeros_like(xs[0])
         for x in xs:
             for cell in self.cells:
-                out, _h = cell(x, h)
-            h = _h.clone()
-        out = out.view(out.size(0), -1)
+                h = cell(x, h)
+        out = h.view(h.size(0), -1)
         return self.classifier(out)
