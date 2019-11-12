@@ -96,7 +96,7 @@ def main():
         plot_path = os.path.join(config.plot_path, "EP{:02d}".format(epoch+1))
         caption = "Epoch {}".format(epoch+1)
         plot(genotype.normal, plot_path + "-normal", caption)
-        plot(genotype.reduce, plot_path + "-reduce", caption)
+        # plot(genotype.reduce, plot_path + "-reduce", caption)
 
         # save
         if best_top1 < top1:
@@ -152,7 +152,9 @@ def train(train_loader, valid_loader, model, architect, w_optim, alpha_optim, lr
                 "Prec@(1,5) ({top1.avg:.1%}, {top5.avg:.1%})".format(
                     epoch+1, config.epochs, step, len(train_loader)-1, losses=losses,
                     top1=top1, top5=top5))
-
+            logger.info("# Alpha - normal")
+            model.print_alphas(logger)
+            
         writer.add_scalar('train/loss', loss.item(), cur_step)
         writer.add_scalar('train/top1', prec1.item(), cur_step)
         writer.add_scalar('train/top5', prec5.item(), cur_step)

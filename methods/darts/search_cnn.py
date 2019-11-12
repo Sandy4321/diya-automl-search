@@ -47,13 +47,15 @@ class SearchCNN(nn.Module):
         self.cells = nn.ModuleList()
         reduction_p = False
         for i in range(n_layers):
+            '''
             # Reduce featuremap size and double channels in 1/3 and 2/3 layer.
             if i in [n_layers//3, 2*n_layers//3]:
                 C_cur *= 2
                 reduction = True
             else:
                 reduction = False
-
+            '''
+            reduction = False
             cell = SearchCell(n_nodes, C_pp, C_p, C_cur, reduction_p, reduction)
             reduction_p = reduction
             self.cells.append(cell)
@@ -63,11 +65,12 @@ class SearchCNN(nn.Module):
         self.gap = nn.AdaptiveAvgPool2d(1)
         self.linear = nn.Linear(C_p, n_classes)
 
-    def forward(self, x, weights_normal, weights_reduce):
+    def forward(self, x, weights_normal, weights_reduce = None):
         s0 = s1 = self.stem(x)
 
         for cell in self.cells:
-            weights = weights_reduce if cell.reduction else weights_normal
+            # weights = weights_reduce if cell.reduction else weights_normal
+            weights = weights_normal
             s0, s1 = s1, cell(s0, s1, weights)
 
         out = self.gap(s1)
@@ -78,7 +81,7 @@ class SearchCNN(nn.Module):
 
 class SearchCNNController(nn.Module):
     """ SearchCNN controller supporting multi-gpu """
-    def __init__(self, C_in, C, n_classes, n_layers, criterion, n_nodes=4, stem_multiplier=3,
+    def __init__(self, C_in, C, n_classes, n_layers, criterion, n_nodes=8, stem_multiplier=3,
                  device_ids=None):
         super().__init__()
         self.n_nodes = n_nodes
@@ -91,11 +94,11 @@ class SearchCNNController(nn.Module):
         n_ops = len(gt.PRIMITIVES)
 
         self.alpha_normal = nn.ParameterList()
-        self.alpha_reduce = nn.ParameterList()
+        #self.alpha_reduce = nn.ParameterList()
 
         for i in range(n_nodes):
             self.alpha_normal.append(nn.Parameter(1e-3*torch.randn(i+2, n_ops)))
-            self.alpha_reduce.append(nn.Parameter(1e-3*torch.randn(i+2, n_ops)))
+            #self.alpha_reduce.append(nn.Parameter(1e-3*torch.randn(i+2, n_ops)))
 
         # setup alphas list
         self._alphas = []
@@ -107,22 +110,29 @@ class SearchCNNController(nn.Module):
 
     def forward(self, x):
         weights_normal = [F.softmax(alpha, dim=-1) for alpha in self.alpha_normal]
-        weights_reduce = [F.softmax(alpha, dim=-1) for alpha in self.alpha_reduce]
+        # weights_reduce = [F.softmax(alpha, dim=-1) for alpha in self.alpha_reduce]
 
         if len(self.device_ids) == 1:
-            return self.net(x, weights_normal, weights_reduce)
+            # return self.net(x, weights_normal, weights_reduce)
+            return self.net(x, weights_normal, None)
 
         # scatter x
         xs = nn.parallel.scatter(x, self.device_ids)
         # broadcast weights
         wnormal_copies = broadcast_list(weights_normal, self.device_ids)
-        wreduce_copies = broadcast_list(weights_reduce, self.device_ids)
+        #wreduce_copies = broadcast_list(weights_reduce, self.device_ids)
 
         # replicate modules
         replicas = nn.parallel.replicate(self.net, self.device_ids)
+        '''
         outputs = nn.parallel.parallel_apply(replicas,
                                              list(zip(xs, wnormal_copies, wreduce_copies)),
                                              devices=self.device_ids)
+        '''
+        outputs = nn.parallel.parallel_apply(replicas,
+                                             list(zip(xs, wnormal_copies)),
+                                             devices=self.device_ids)
+
         return nn.parallel.gather(outputs, self.device_ids[0])
 
     def loss(self, X, y):
@@ -140,10 +150,11 @@ class SearchCNNController(nn.Module):
         logger.info("# Alpha - normal")
         for alpha in self.alpha_normal:
             logger.info(F.softmax(alpha, dim=-1))
-
+        '''
         logger.info("\n# Alpha - reduce")
         for alpha in self.alpha_reduce:
             logger.info(F.softmax(alpha, dim=-1))
+        '''
         logger.info("#####################")
 
         # restore formats
@@ -152,11 +163,13 @@ class SearchCNNController(nn.Module):
 
     def genotype(self):
         gene_normal = gt.parse(self.alpha_normal, k=2)
-        gene_reduce = gt.parse(self.alpha_reduce, k=2)
+        #gene_reduce = gt.parse(self.alpha_reduce, k=2)
         concat = range(2, 2+self.n_nodes) # concat all intermediate nodes
-
+        '''
         return gt.Genotype(normal=gene_normal, normal_concat=concat,
                            reduce=gene_reduce, reduce_concat=concat)
+        '''
+        return gt.Genotype(normal=gene_normal, normal_concat=concat)
 
     def weights(self):
         return self.net.parameters()

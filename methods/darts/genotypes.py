@@ -9,7 +9,7 @@ import torch.nn as nn
 import ops
 
 
-Genotype = namedtuple('Genotype', 'normal normal_concat reduce reduce_concat')
+Genotype = namedtuple('Genotype', 'normal normal_concat')
 
 PRIMITIVES = [
     'max_pool_3x3',
