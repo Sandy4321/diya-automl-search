@@ -89,6 +89,8 @@ if __name__ == "__main__":
     parser.add_argument("--epochs", type=int, default=10)
     parser.add_argument("--lr", type=float, default=1e-3)
     parser.add_argument("--momentum", type=float, default=0.9)
+    parser.add_argument("--weight_decay", type=float, default=5e-4)
+    parser.add_argument("--dropout", type=float, default=0.1)
 
     args = parser.parse_args()
     if args.load_config is not None:

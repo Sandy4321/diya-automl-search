@@ -15,6 +15,8 @@ class Trainer:
         self.optimizer = torch.optim.Adam(
             model.parameters(),
             lr=args.lr,
+            betas=(args.momentum, 0.999),
+            weight_decay=args.weight_decay
         )
         self.epoch = 0
         self.step = 0
