@@ -10,7 +10,7 @@ from tqdm import tqdm
 from settings import PROJECT_ROOT, DATA_DIR
 nltk.data.path.append(os.path.join(PROJECT_ROOT, DATA_DIR, 'nltk_data'))
 
-__all__ = ['imdb', 'imdb_glove', 'imdb_fasttext']
+__all__ = ['sst2', 'sst2_glove', 'sst2_fasttext']
 
 
 class DataLoader:
@@ -32,8 +32,8 @@ class DataLoader:
         return data, label
 
 
-class IMDB:
-    def __init__(self, root, split_ratio, length=128):
+class SST2:
+    def __init__(self, root, split_ratio, length=32):
         self.stopwords = set(stopwords.words("english"))
         self.lemmatizer = WordNetLemmatizer()
         self.text = torchtext.data.Field(
@@ -43,17 +43,21 @@ class IMDB:
         )
         self.label = torchtext.data.LabelField(dtype=torch.long)
 
-        path = os.path.join(root, 'imdb', 'preprocessed.pth')
+        path = os.path.join(root, 'sst', 'preprocessed.pth')
         if os.path.isfile(path):
             pth = torch.load(path, map_location=lambda storage, loc: storage)
             train = pth['train']
             test = pth['test']
         else:
-            data = torchtext.datasets.IMDB
-            self.pbar = tqdm(total=50000)
-            train, test = data.splits(self.text, self.label, root=root)
-            train = list(iter(train))
+            data = torchtext.datasets.SST
+            self.pbar = tqdm(total=11855)
+            train, val, test = data.splits(self.text, self.label, root=root)
+            train = list(iter(train)) + list(iter(val))
             test = list(iter(test))
+
+            train = [ex for ex in train if ex.label != 'neutral']
+            test = [ex for ex in test if ex.label != 'neutral']
+
             pth = {
                 'train': train,
                 'test': test
@@ -89,9 +93,9 @@ class IMDB:
         return text
 
 
-def imdb(args):
+def sst2(args):
     root = os.path.join(PROJECT_ROOT, DATA_DIR)
-    data = IMDB(root, args.split_ratio)
+    data = SST2(root, args.split_ratio)
     vectors = torchtext.vocab.Vectors(
         'glove.840B.300d.txt',
         os.path.join(root, 'glove')
@@ -99,7 +103,7 @@ def imdb(args):
     vocab = data.build_vocab(vectors)
     vocab = torch.randn_like(vocab)
     return {
-        'size': (128, 300),
+        'size': (32, 300),
         'num_classes': 2,
         'train': DataLoader(
             data.train,
@@ -119,16 +123,16 @@ def imdb(args):
     }
 
 
-def imdb_glove(args):
+def sst2_glove(args):
     root = os.path.join(PROJECT_ROOT, DATA_DIR)
-    data = IMDB(root, args.split_ratio)
+    data = SST2(root, args.split_ratio)
     vectors = torchtext.vocab.Vectors(
         'glove.840B.300d.txt',
         os.path.join(root, 'glove')
     )
     vocab = data.build_vocab(vectors)
     return {
-        'size': (128, 300),
+        'size': (32, 300),
         'num_classes': 2,
         'train': DataLoader(
             data.train,
@@ -148,16 +152,16 @@ def imdb_glove(args):
     }
 
 
-def imdb_fasttext(args):
+def sst2_fasttext(args):
     root = os.path.join(PROJECT_ROOT, DATA_DIR)
-    data = IMDB(root, args.split_ratio, length=512)
+    data = SST2(root, args.split_ratio)
     vectors = torchtext.vocab.Vectors(
         'wiki.en.vec',
         os.path.join(root, 'fasttext')
     )
     vocab = data.build_vocab(vectors)
     return {
-        'size': (512, 300),
+        'size': (32, 300),
         'num_classes': 2,
         'train': DataLoader(
             data.train,

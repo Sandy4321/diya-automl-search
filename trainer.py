@@ -1,8 +1,10 @@
+import warnings
 import time
 import torch
 import torch.nn as nn
-
 from utils.summary import EvaluationMetrics
+
+warnings.filterwarnings('ignore', category=UserWarning)
 
 
 class Trainer:
@@ -12,8 +14,11 @@ class Trainer:
         self.args = args
 
         self.criterion = nn.CrossEntropyLoss()
+        params = list(model.parameters())
+        if hasattr(self.env['train'], 'embed'):
+            params += list(self.env['train'].embed.parameters())
         self.optimizer = torch.optim.Adam(
-            model.parameters(),
+            params,
             lr=args.lr,
             betas=(args.momentum, 0.999),
             weight_decay=args.weight_decay
