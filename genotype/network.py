@@ -4,7 +4,7 @@ import torch.nn as nn
 
 
 class FeedForward(nn.Module):
-    def __init__(self, stem, cells, classifier, dropout=0.1):
+    def __init__(self, stem, cells, classifier):
         super().__init__()
         self.stem = deepcopy(stem)
         self.cells = deepcopy(cells)
@@ -19,7 +19,7 @@ class FeedForward(nn.Module):
 
 
 class Recurrent(nn.Module):
-    def __init__(self, stem, cells, classifier, dropout=0.1):
+    def __init__(self, stem, cells, classifier):
         super().__init__()
         self.stem = deepcopy(stem)
         self.cells = deepcopy(cells)
