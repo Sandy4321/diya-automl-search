@@ -50,17 +50,18 @@ def model_info(genome):
 
 
 def make_genome(genome):
+    root = -2 if isinstance(genome, RNNGenome) else -1
     node_info, conn_info = model_info(genome)
     G = nx.DiGraph()
     for u, vs in conn_info.items():
         for v in vs:
             G.add_edge(v, u)
-    if -1 not in G.nodes:
+    if root not in G.nodes:
         index = []
     else:
         v_remove = []
         for v in G.nodes:
-            if not nx.has_path(G, -1, v):
+            if not nx.has_path(G, root, v) and v >= 0:
                 v_remove.append(v)
         G.remove_nodes_from(v_remove)
         index = list(nx.topological_sort(G))
@@ -72,27 +73,29 @@ def make_genome(genome):
             for node_idx in range(len(conn_info[idx]) // 2):
                 out = [node_info[idx][0]]
                 in_idx1 = conn_info[idx][2*node_idx]
-                if in_idx1 != -1 and in_idx1 in index:
+                if in_idx1 >= 0 and in_idx1 in index:
                     ops = node_info[in_idx1][1:]
                     in_idx1 = index.index(in_idx1)
                 else:
-                    if in_idx1 == -1:
+                    if in_idx1 < 0:
                         ops = ['5', '0', '3']
+                        in_idx1 = in_idx1 - root
                     else:
                         ops = ['6', '0', '0']
-                    in_idx1 = 0
+                        in_idx1 = 0
                 out += [str(in_idx1), IDX_SEP, *ops]
 
                 in_idx2 = conn_info[idx][2*node_idx + 1]
-                if in_idx2 != -1 and in_idx2 in index:
+                if in_idx2 >= 0 and in_idx2 in index:
                     ops = node_info[in_idx2][1:]
                     in_idx2 = index.index(in_idx2)
                 else:
-                    if in_idx2 == -1:
+                    if in_idx2 < 0:
                         ops = ['5', '0', '3']
+                        in_idx2 = in_idx2 - root
                     else:
                         ops = ['6', '0', '0']
-                    in_idx2 = 0
+                        in_idx2 = 0
                 out += [str(in_idx2), IDX_SEP, *ops]
 
                 new_genome.append(''.join(out))
@@ -100,15 +103,16 @@ def make_genome(genome):
             if len(conn_info[idx]) % 2 == 1:
                 out = [node_info[idx][0]]
                 in_idx1 = conn_info[idx][-1]
-                if in_idx1 != -1 and in_idx1 in index:
+                if in_idx1 >= 0 and in_idx1 in index:
                     ops = node_info[in_idx1][1:]
                     in_idx1 = index.index(in_idx1)
                 else:
-                    if in_idx1 == -1:
+                    if in_idx1 < 0:
                         ops = ['5', '0', '3']
+                        in_idx1 = in_idx1 - root
                     else:
                         ops = ['6', '0', '0']
-                    in_idx1 = 0
+                        in_idx1 = 0
                 out += [str(in_idx1), IDX_SEP, *ops]
                 out += [str(0), IDX_SEP, '6', '0', '0']
 

@@ -5,6 +5,7 @@ import torch.nn as nn
 
 from settings import PROJECT_ROOT
 from utils.summary import AverageMeter
+from utils.common import load_genome
 from trainer import Trainer
 from genotype.cell import CNNCell, RNNCell, TransformerCell
 from genotype.network import FeedForward, Recurrent
@@ -64,15 +65,15 @@ class NEAT(Base):
     def eval_genomes(self, genomes, config):
         fitness = AverageMeter()
         for idx, (genome_id, genome) in enumerate(genomes):
-            cell = self.cell(self.size, make_genome(genome)[:self.args.nodes])
-            cells = nn.ModuleList([cell]*self.args.cells)
-            model = self.network(self.stem, cells, self.classifier)
-
-            trainer = Trainer(self.env['train'], model, self.args)
+            model = load_genome(
+                make_genome(genome)[:self.args.nodes],
+                self.args
+            )
+            trainer = Trainer(self.env, model, self.args)
             for _ in range(self.args.epochs):
                 trainer.train()
-            trainer = Trainer(self.env['val'], model, self.args)
-            trainer.infer()
+            trainer.info.reset()
+            trainer.infer(test=False)
 
             genome.fitness = trainer.info.avg['Accuracy/Top1']
             fitness.update(genome.fitness)
@@ -81,7 +82,7 @@ class NEAT(Base):
                 self.logger.log("Saving genome at step {}...".format(
                     self.step
                 ))
-                filename = 'genome{}.txt'.format(self.step)
+                filename = 'genome_{}.txt'.format(self.step)
                 path = os.path.join(self.logger.log_dir, filename)
                 with open(path, 'w') as f:
                     seqs = make_genome(genome)

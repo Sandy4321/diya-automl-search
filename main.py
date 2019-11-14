@@ -49,7 +49,7 @@ def train(args):
         logger.log("Validation accuracy: {}".format(acc))
         if acc > best_acc:
             best_acc = acc
-            path = os.path.join(logger.log_dir, 'model_{}.pth'.format(epoch))
+            path = os.path.join(logger.log_dir, 'model.pth'.format(epoch))
             logger.log("Saving model at epoch: {}".format(epoch))
             common.save_model(model, path)
 
@@ -76,12 +76,12 @@ if __name__ == "__main__":
     parser.add_argument("--num_workers", type=int, default=4)
 
     parser.add_argument_group("search options")
-    parser.add_argument("--method", type=str)
+    parser.add_argument("--method", type=str.upper)
     parser.add_argument("--type", type=str)
     parser.add_argument("--split_ratio", type=float, default=0.5)
     parser.add_argument("--nodes", type=int, default=4)
     parser.add_argument("--cells", type=int, default=4)
-    parser.add_argument("--dim", type=int, default=32)
+    parser.add_argument("--dim", type=int, default=64)
 
     parser.add_argument_group("training options")
     parser.add_argument("--checkpoint", type=str)
@@ -89,8 +89,8 @@ if __name__ == "__main__":
     parser.add_argument("--epochs", type=int, default=10)
     parser.add_argument("--lr", type=float, default=1e-3)
     parser.add_argument("--momentum", type=float, default=0.9)
-    parser.add_argument("--weight_decay", type=float, default=5e-4)
-    parser.add_argument("--dropout", type=float, default=0.1)
+    parser.add_argument("--weight_decay", type=float, default=0.0)
+    parser.add_argument("--dropout", type=float, default=0.0)
 
     args = parser.parse_args()
     if args.load_config is not None:

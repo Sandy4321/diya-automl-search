@@ -1,4 +1,3 @@
-import torch
 import torch.nn as nn
 import genotype.operations as ops
 
@@ -100,7 +99,7 @@ class CNNCell(nn.Module):
         for (idx1, idx2), node in zip(self.idx, self.nodes):
             out = node(outs[idx1], outs[idx2])
             outs.append(out)
-        return out
+        return outs[-1]
 
     def check_ops(self, agg, *ops):
         assert agg in self.AGGREGATIONS.keys()
@@ -136,7 +135,7 @@ class RNNCell(CNNCell):
         for (idx1, idx2), node in zip(self.idx, self.nodes):
             out = node(outs[idx1], outs[idx2])
             outs.append(out)
-        return out
+        return outs[-1]
 
 
 class TransformerCell(CNNCell):
