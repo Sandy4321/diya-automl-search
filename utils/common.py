@@ -33,7 +33,7 @@ def load_genome(genome, args):
             nn.Dropout2d(args.dropout)
         )
         cells = nn.ModuleList(
-            [genotype.cell.CNNCell(size, genome)]*args.cells
+            [genotype.cell.CNNCell(size, genome) for _ in range(args.cells)]
         )
         classifier = nn.Sequential(
             nn.Dropout(args.dropout),
@@ -51,7 +51,7 @@ def load_genome(genome, args):
             nn.Dropout(args.dropout)
         )
         cells = nn.ModuleList(
-            [genotype.cell.RNNCell(size, genome)]*args.cells
+            [genotype.cell.RNNCell(size, genome) for _ in range(args.cells)]
         )
         classifier = nn.Sequential(
             nn.Dropout(args.dropout),
@@ -69,7 +69,8 @@ def load_genome(genome, args):
             nn.Dropout(args.dropout)
         )
         cells = nn.ModuleList(
-            [genotype.cell.TransformerCell(size, genome)]*args.cells
+            ([genotype.cell.TransformerCell(size, genome)
+             for _ in range(args.cells)])
         )
         classifier = nn.Sequential(
             nn.Dropout(args.dropout),
