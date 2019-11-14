@@ -1,11 +1,11 @@
 import os
-import re
 import torch
 import torch.nn as nn
 import torchtext
 import nltk
-from nltk.corpus import stopwords
-from nltk.stem import WordNetLemmatizer
+from nltk.corpus import stopwords, wordnet
+from nltk.stem.wordnet import WordNetLemmatizer
+from tqdm import tqdm
 
 from settings import PROJECT_ROOT, DATA_DIR
 nltk.data.path.append(os.path.join(PROJECT_ROOT, DATA_DIR, 'nltk_data'))
@@ -39,26 +39,53 @@ class IMDB:
         self.text = torchtext.data.Field(
             lower=True,
             fix_length=length,
-            tokenize=self.clean_text
+            tokenize=self.preprocess
         )
         self.label = torchtext.data.LabelField(dtype=torch.long)
 
-        data = torchtext.datasets.IMDB
-        train, self.test = data.splits(self.text, self.label, root=root)
+        path = os.path.join(root, 'imdb', 'preprocessed.pth')
+        if os.path.isfile(path):
+            pth = torch.load(path, map_location=lambda storage, loc: storage)
+            train = pth['train']
+            test = pth['test']
+        else:
+            data = torchtext.datasets.IMDB
+            self.pbar = tqdm(total=50000)
+            train, test = data.splits(self.text, self.label, root=root)
+            train = list(iter(train))
+            test = list(iter(test))
+            pth = {
+                'train': train,
+                'test': test
+            }
+            torch.save(pth, path)
+
+        fields = [('text', self.text), ('label', self.label)]
+        train = torchtext.data.Dataset(train, fields)
         self.train, self.val = train.split(split_ratio)
+        self.test = torchtext.data.Dataset(test, fields)
 
     def build_vocab(self, vectors):
         self.text.build_vocab(self.train, vectors=vectors)
         self.label.build_vocab(self.train)
         return self.text.vocab.vectors
 
-    def clean_text(self, text):
-        text = re.sub(r'[^\w\s]', '', text, re.UNICODE)
-        text = text.lower()
-        text = [self.lemmatizer.lemmatize(token) for token in text.split(" ")]
-        text = [self.lemmatizer.lemmatize(token, "v") for token in text]
-        text = [word for word in text if word not in self.stopwords]
-        text = " ".join(text)
+    def get_pos(self, token):
+        tag = nltk.pos_tag([token])[0][1][0].upper()
+        tag_dict = {
+            "J": wordnet.ADJ,
+            "N": wordnet.NOUN,
+            "V": wordnet.VERB,
+            "R": wordnet.ADV
+        }
+        return tag_dict.get(tag, wordnet.NOUN)
+
+    def preprocess(self, text):
+        text = nltk.word_tokenize(text.lower())
+        text = [token for token in text if token.isalpha()]
+        text = [self.lemmatizer.lemmatize(t, self.get_pos(t)) for t in text]
+        text = [token for token in text if token not in self.stopwords]
+        self.pbar.update()
         return text
 
 
@@ -66,12 +93,12 @@ def imdb_glove50d(args):
     root = os.path.join(PROJECT_ROOT, DATA_DIR)
     data = IMDB(root, args.split_ratio)
     vectors = torchtext.vocab.Vectors(
-        'glove.6B.50d.txt',
+        'glove.6B.300d.txt',
         os.path.join(root, 'glove')
     )
     vocab = data.build_vocab(vectors)
     return {
-        'size': (128, 50),
+        'size': (128, 300),
         'num_classes': 2,
         'train': DataLoader(
             data.train,
