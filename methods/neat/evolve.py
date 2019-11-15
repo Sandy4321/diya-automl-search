@@ -1,15 +1,10 @@
 import os
 import neat
-import numpy as np
-import torch.nn as nn
-
 from settings import PROJECT_ROOT
 from utils.summary import AverageMeter
 from utils.common import load_genome
 from trainer import Trainer
 import envs
-from genotype.cell import CNNCell, RNNCell, TransformerCell
-from genotype.network import FeedForward, Recurrent
 from methods.base import Base
 from methods.neat.genome import CNNGenome, RNNGenome, TransformerGenome
 from methods.neat.genome import make_genome
@@ -18,40 +13,15 @@ from methods.neat.genome import make_genome
 class NEAT(Base):
     def __init__(self, args):
         super().__init__('NEAT', args)
-        env = getattr(envs, args.env)(args)
         if args.type == 'cnn':
             genome = CNNGenome
-            self.size = tuple([args.dim, *env['size'][1:]])
-            self.stem = nn.Conv2d(env['size'][0], args.dim, 3, padding=1)
-            self.cell = CNNCell
-            self.classifier = nn.Linear(
-                args.dim*np.prod(env['size'][1:]),
-                env['num_classes']
-            )
-            self.network = FeedForward
         elif args.type == 'rnn':
             genome = RNNGenome
-            self.size = tuple([args.dim, 1])
-            self.stem = nn.Linear(env['size'][1], args.dim // 2)
-            self.cell = RNNCell
-            self.classifier = nn.Linear(
-                args.dim // 2,
-                env['num_classes']
-            )
-            self.network = Recurrent
         elif args.type == 'transformer':
             genome = TransformerGenome
-            self.size = tuple([env['size'][0], args.dim])
-            self.stem = nn.Linear(env['size'][1], args.dim)
-            self.cell = TransformerCell
-            self.classifier = nn.Linear(
-                args.dim*env['size'][0],
-                env['num_classes']
-            )
-            self.network = FeedForward
         else:
             raise NotImplementedError
-        self.env = env
+        self.env = getattr(envs, args.env)(args)
         self.args = args
 
         path = os.path.join(PROJECT_ROOT, 'methods', 'neat')
