@@ -53,9 +53,7 @@ def load_genome(genome, args):
             nn.Linear(env['size'][1], args.dim),
             nn.Dropout(args.dropout)
         )
-        cells = nn.ModuleList(
-            [genotype.cell.RNNCell(size, genome) for _ in range(args.cells)]
-        )
+        cell = genotype.cell.RNNCell(size, genome)
         classifier = nn.Sequential(
             nn.Dropout(args.dropout),
             nn.Linear(
@@ -63,7 +61,7 @@ def load_genome(genome, args):
                 env['num_classes']
             )
         )
-        return genotype.network.Recurrent(stem, cells, classifier)
+        return genotype.network.Recurrent(stem, cell, classifier)
 
     elif args.type == 'transformer':
         size = tuple([env['size'][0], args.dim])
@@ -83,3 +81,6 @@ def load_genome(genome, args):
             )
         )
         return genotype.network.FeedForward(stem, cells, classifier)
+
+    else:
+        raise NotImplementedError
