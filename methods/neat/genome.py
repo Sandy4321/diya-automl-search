@@ -78,7 +78,7 @@ def make_genome(genome):
                     in_idx1 = index.index(in_idx1)
                 else:
                     if in_idx1 < 0:
-                        ops = ['5', '0', '3']
+                        ops = ['0', '0', '3']
                         in_idx1 = in_idx1 - root
                     else:
                         ops = ['6', '0', '0']
@@ -91,7 +91,7 @@ def make_genome(genome):
                     in_idx2 = index.index(in_idx2)
                 else:
                     if in_idx2 < 0:
-                        ops = ['5', '0', '3']
+                        ops = ['0', '0', '3']
                         in_idx2 = in_idx2 - root
                     else:
                         ops = ['6', '0', '0']
@@ -108,7 +108,7 @@ def make_genome(genome):
                     in_idx1 = index.index(in_idx1)
                 else:
                     if in_idx1 < 0:
-                        ops = ['5', '0', '3']
+                        ops = ['0', '0', '3']
                         in_idx1 = in_idx1 - root
                     else:
                         ops = ['6', '0', '0']
