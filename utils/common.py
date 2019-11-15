@@ -1,5 +1,8 @@
 import torch
+import torch.nn as nn
 import numpy as np
+import envs
+import genotype
 
 
 class ArgumentParser(dict):
@@ -80,10 +83,3 @@ def load_genome(genome, args):
             )
         )
         return genotype.network.FeedForward(stem, cells, classifier)
-
-def get_bytes(model):
-    total = 0
-    for param in model.parameters():
-        size = np.prod(param.size())
-        total += 4*size
-    return total

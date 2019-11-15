@@ -9,7 +9,7 @@ warnings.filterwarnings('ignore', category=UserWarning)
 
 class Trainer:
     def __init__(self, env, model, args=None):
-        self.loader = env
+        self.env = env
         self.model = model.to(args.device)
         self.args = args
 
@@ -37,7 +37,7 @@ class Trainer:
 
     def train(self):
         self.model.train()
-        for data, labels in self.loader:
+        for data, labels in self.env['train']:
             self.step += 1
             st = time.time()
 
@@ -62,11 +62,12 @@ class Trainer:
 
         self.epoch += 1
 
-    def infer(self):
+    def infer(self, test=True):
         self.info.reset()
         self.model.eval()
+        loader = self.env['test'] if test else self.env['val']
         with torch.no_grad():
-            for data, labels in self.loader:
+            for data, labels in loader:
                 st = time.time()
 
                 data = data.to(self.args.device)
@@ -78,7 +79,6 @@ class Trainer:
                 self.info.update('Accuracy/Top1', top1.item())
 
                 elapsed = time.time() - st
+                self.info.update('Epoch', self.epoch)
                 self.info.update('Time/Step', elapsed)
                 self.info.update('Time/Item', elapsed/len(data))
-
-        self.info.update('Epoch', self.epoch)
