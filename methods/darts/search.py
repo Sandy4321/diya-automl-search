@@ -147,7 +147,7 @@ class DARTS(Base):
                 with open(path, 'w') as f:
                     seqs = make_genome(self.controller)
                     for seq in seqs:
-                        f.write(seq)
+                        f.write(seq + '\n')
 
 
 class DARTS_2ND(DARTS):

@@ -59,7 +59,7 @@ class NEAT(Base):
                 with open(path, 'w') as f:
                     seqs = make_genome(genome)
                     for seq in seqs:
-                        f.write(seq)
+                        f.write(seq + '\n')
 
             if self.step % self.args.log_step == 0:
                 self.logger.log("Generation {}: {}/{} ({:.2f}%)".format(
