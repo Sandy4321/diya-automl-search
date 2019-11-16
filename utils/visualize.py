@@ -119,6 +119,12 @@ def draw_genome(cell_type, genome):
     )
     G.add_edge(last, 'output')
 
+    to_remove = []
+    for node in G.nodes:
+        if not nx.has_path(G, node, 'output'):
+            to_remove.append(node)
+    G.remove_nodes_from(to_remove)
+
     G.graph['graph'] = {'rankdir': 'TD'}
     G.graph['node'] = {'shape': 'rect'}
     G.graph['edges'] = {'arrowsize': '4.0'}
