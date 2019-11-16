@@ -56,6 +56,7 @@ def cifar10(args):
             CIFAR10(root, train=False),
             batch_size=args.batch_size,
             num_workers=args.num_workers,
-            drop_last=False
+            drop_last=False,
+            shuffle=False,
         )
     }

@@ -37,7 +37,6 @@ def model_info(genome):
         node_info[k] = [
             genome.nodes[k].aggregation,
             genome.nodes[k].operation,
-            genome.nodes[k].kernel_size,
             genome.nodes[k].activation
         ]
     for a, b in list(genome.connections.keys()):
@@ -78,10 +77,10 @@ def make_genome(genome):
                     in_idx1 = index.index(in_idx1)
                 else:
                     if in_idx1 < 0:
-                        ops = ['0', '0', '3']
+                        ops = ['02', '0']
                         in_idx1 = in_idx1 - root
                     else:
-                        ops = ['6', '0', '0']
+                        ops = ['00', '0']
                         in_idx1 = 0
                 out += [str(in_idx1), IDX_SEP, *ops]
 
@@ -91,10 +90,10 @@ def make_genome(genome):
                     in_idx2 = index.index(in_idx2)
                 else:
                     if in_idx2 < 0:
-                        ops = ['0', '0', '3']
+                        ops = ['02', '0']
                         in_idx2 = in_idx2 - root
                     else:
-                        ops = ['6', '0', '0']
+                        ops = ['00', '0']
                         in_idx2 = 0
                 out += [str(in_idx2), IDX_SEP, *ops]
 
@@ -108,13 +107,13 @@ def make_genome(genome):
                     in_idx1 = index.index(in_idx1)
                 else:
                     if in_idx1 < 0:
-                        ops = ['0', '0', '3']
+                        ops = ['02', '0']
                         in_idx1 = in_idx1 - root
                     else:
-                        ops = ['6', '0', '0']
+                        ops = ['00', '0']
                         in_idx1 = 0
                 out += [str(in_idx1), IDX_SEP, *ops]
-                out += [str(0), IDX_SEP, '6', '0', '0']
+                out += [str(0), IDX_SEP, '00', '0']
 
                 new_genome.append(''.join(out))
 

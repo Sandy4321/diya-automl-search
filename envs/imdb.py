@@ -163,15 +163,18 @@ def imdb_fasttext(args):
             data.train,
             vocab,
             batch_size=args.batch_size,
+            shuffle=True,
         ),
         'val': DataLoader(
             data.val,
             vocab,
             batch_size=args.batch_size,
+            shuffle=True,
         ),
         'test': DataLoader(
             data.test,
             vocab,
             batch_size=args.batch_size,
+            shuffle=False,
         )
     }

@@ -7,24 +7,25 @@ AGGREGATIONS = {
     '1': 'product'
 }
 OPERATIONS = {
-    '0': 'sep_conv',
-    '1': 'dil_conv',
-    '2': 'max_pool',
-    '3': 'avg_pool',
-    '4': 'attention',
-    '5': 'identity',
-    '6': 'none'
-}
-KERNEL_SIZE = {
-    '0': 1,
-    '1': 3,
-    '2': 5
+    '00': 'none',
+    '01': 'identity',
+    '02': 'sep_conv_1',
+    '03': 'sep_conv_3',
+    '04': 'sep_conv_5',
+    '05': 'dil_conv_1',
+    '06': 'dil_conv_3',
+    '07': 'dil_conv_5',
+    '08': 'max_pool_3',
+    '09': 'max_pool_5',
+    '10': 'avg_pool_3',
+    '11': 'avg_pool_5',
+    '12': 'attention',
 }
 ACTIVATIONS = {
-    '0': nn.ReLU(),
-    '1': nn.Sigmoid(),
-    '2': nn.Tanh(),
-    '3': ops.Identity()
+    '0': ops.Identity(),
+    '1': nn.ReLU(),
+    '2': nn.Sigmoid(),
+    '3': nn.Tanh(),
 }
 
 
@@ -33,15 +34,13 @@ class Node(nn.Module):
         super().__init__()
         self.agg = AGGREGATIONS[agg]
         self.norm1 = nn.LayerNorm(size)
-        ks = KERNEL_SIZE[op1[1]]
         self.op1 = nn.Sequential(
-            getattr(ops, OPERATIONS[op1[0]])(size, ks),
+            getattr(ops, OPERATIONS[op1[:2]])(size),
             ACTIVATIONS[op1[2]]
         )
         self.norm2 = nn.LayerNorm(size)
-        ks = KERNEL_SIZE[op2[1]]
         self.op2 = nn.Sequential(
-            getattr(ops, OPERATIONS[op2[0]])(size, ks),
+            getattr(ops, OPERATIONS[op2[:2]])(size),
             ACTIVATIONS[op2[2]]
         )
 
@@ -62,21 +61,22 @@ class CNNCell(nn.Module):
         '0': 'sum',
     }
     OPERATIONS = {
-        '0': 'sep_conv',
-        '1': 'dil_conv',
-        '2': 'max_pool',
-        '3': 'avg_pool',
-        '5': 'identity',
-        '6': 'none'
-    }
-    KERNEL_SIZE = {
-        '0': 1,
-        '1': 3,
-        '2': 5
+        '00': 'none',
+        '01': 'identity',
+        '02': 'sep_conv_1',
+        '03': 'sep_conv_3',
+        '04': 'sep_conv_5',
+        '05': 'dil_conv_1',
+        '06': 'dil_conv_3',
+        '07': 'dil_conv_5',
+        '08': 'max_pool_3',
+        '09': 'max_pool_5',
+        '10': 'avg_pool_3',
+        '11': 'avg_pool_5',
     }
     ACTIVATIONS = {
-        '0': nn.ReLU(),
-        '3': ops.Identity()
+        '0': ops.Identity(),
+        '1': nn.ReLU(),
     }
 
     def __init__(self, size, genome):
@@ -104,8 +104,7 @@ class CNNCell(nn.Module):
     def check_ops(self, agg, *ops):
         assert agg in self.AGGREGATIONS.keys()
         for op in ops:
-            assert op[0] in self.OPERATIONS.keys()
-            assert op[1] in self.KERNEL_SIZE.keys()
+            assert op[:2] in self.OPERATIONS.keys()
             assert op[2] in self.ACTIVATIONS.keys()
 
 
@@ -116,18 +115,15 @@ class RNNCell(CNNCell):
         '1': 'product'
     }
     OPERATIONS = {
-        '0': 'sep_conv',
-        '5': 'identity',
-        '6': 'none'
-    }
-    KERNEL_SIZE = {
-        '0': 1,
+        '00': 'none',
+        '01': 'identity',
+        '02': 'sep_conv_1',
     }
     ACTIVATIONS = {
-        '0': nn.ReLU(),
-        '1': nn.Sigmoid(),
-        '2': nn.Tanh(),
-        '3': ops.Identity()
+        '0': ops.Identity(),
+        '1': nn.ReLU(),
+        '2': nn.Sigmoid(),
+        '3': nn.Tanh(),
     }
 
     def forward(self, x, h):
@@ -144,20 +140,23 @@ class TransformerCell(CNNCell):
         '0': 'sum',
     }
     OPERATIONS = {
-        '0': 'sep_conv',
-        '1': 'dil_conv',
-        '4': 'attention',
-        '5': 'identity',
-        '6': 'none'
-    }
-    KERNEL_SIZE = {
-        '0': 1,
-        '1': 3,
-        '2': 5
+        '00': 'none',
+        '01': 'identity',
+        '02': 'sep_conv_1',
+        '03': 'sep_conv_3',
+        '04': 'sep_conv_5',
+        '05': 'dil_conv_1',
+        '06': 'dil_conv_3',
+        '07': 'dil_conv_5',
+        '08': 'max_pool_3',
+        '09': 'max_pool_5',
+        '10': 'avg_pool_3',
+        '11': 'avg_pool_5',
+        '12': 'attention',
     }
     ACTIVATIONS = {
-        '0': nn.ReLU(),
-        '1': nn.Sigmoid(),
-        '2': nn.Tanh(),
-        '3': ops.Identity()
+        '0': ops.Identity(),
+        '1': nn.ReLU(),
+        '2': nn.Sigmoid(),
+        '3': nn.Tanh(),
     }
