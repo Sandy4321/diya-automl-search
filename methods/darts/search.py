@@ -1,6 +1,7 @@
 import os
 import time
 import torch
+from genotype.cell import IDX_SEP
 import envs
 from trainer import Trainer
 from methods.base import Base
@@ -8,6 +9,36 @@ from methods.darts.controller import CNNController
 from methods.darts.controller import RNNController
 from methods.darts.controller import TransformerController
 from methods.darts.architect import Architect
+
+
+def make_genome(controller):
+    genome = []
+    bias = 0 if isinstance(controller, RNNController) else 1
+    for a_agg, a_ops in zip(controller.alpha_agg, controller.alpha_ops):
+        out = [str(torch.argmax(a_agg).item())]
+        indices = torch.argsort(a_ops.view(-1), descending=True)
+        count = 0
+        for cand in indices:
+            idx = (cand // a_ops.shape[1]).item()
+            idx = str(max(idx - bias, 0))
+            seq = (cand % a_ops.shape[1]).item()
+            op = seq // len(controller.type.ACTIVATIONS)
+            if op == 0:
+                continue
+            elif op < 10:
+                op = '0' + str(op)
+            else:
+                op = str(op)
+            ac = str(seq % len(controller.type.ACTIVATIONS))
+            out += [idx, IDX_SEP, op, ac]
+            count += 1
+            if count == 2:
+                break
+        if count < 2:
+            continue
+        genome.append(''.join(out))
+
+    return genome
 
 
 class DARTSTrainer(Trainer):
@@ -68,8 +99,6 @@ class DARTSTrainer(Trainer):
                 self.logger.scalar_summary(self.info.avg, self.step)
                 self.info.reset()
 
-                print(self.model.alpha_ops[0])
-
         self.epoch += 1
 
 
@@ -103,14 +132,22 @@ class DARTS(Base):
         best_acc = 0
         for epoch in range(self.args.epochs):
             self.trainer.train()
-            self.trainer.infer(test=True)
+            self.trainer.infer(test=False)
+
             acc = self.trainer.info.avg['Accuracy/Top1']
             self.trainer.info.reset()
             self.logger.log("Validation accuracy: {}".format(acc))
             if acc > best_acc:
                 best_acc = acc
-                path = os.path.join(self.logger.log_dir, 'model.pth'.format(epoch))
-                self.logger.log("Saving model at epoch: {}".format(epoch))
+                self.logger.log("Saving genome at step {}...".format(
+                    self.trainer.step
+                ))
+                filename = 'genome_{}.txt'.format(self.trainer.step)
+                path = os.path.join(self.logger.log_dir, filename)
+                with open(path, 'w') as f:
+                    seqs = make_genome(self.controller)
+                    for seq in seqs:
+                        f.write(seq)
 
 
 class DARTS_2ND(DARTS):
