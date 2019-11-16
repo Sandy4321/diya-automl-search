@@ -32,19 +32,20 @@ def mnist(args):
             sampler=SubsetRandomSampler(indices[:split]),
             batch_size=args.batch_size,
             num_workers=args.num_workers,
-            drop_last=True
+            drop_last=True,
         ),
         'val': DataLoader(
             MNIST(root, train=True),
             sampler=SubsetRandomSampler(indices[split:]),
             batch_size=args.batch_size,
             num_workers=args.num_workers,
-            drop_last=True
+            drop_last=True,
         ),
         'test': DataLoader(
             MNIST(root, train=False),
             batch_size=args.batch_size,
             num_workers=args.num_workers,
-            drop_last=False
+            drop_last=False,
+            shuffle=False,
         )
     }

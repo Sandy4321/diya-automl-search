@@ -6,12 +6,11 @@ from genotype.cell import CNNCell, RNNCell, TransformerCell
 def get_attributes(cell):
     # Remove 'none' from operations
     operations = list(cell.OPERATIONS.keys())
-    if '6' in operations:
-        operations.remove('6')
+    if '00' in operations:
+        operations.remove('00')
     return [
         StringAttribute('aggregation', options=cell.AGGREGATIONS.keys()),
         StringAttribute('operation', options=operations),
-        StringAttribute('kernel_size', options=cell.KERNEL_SIZE.keys()),
         StringAttribute('activation', options=cell.ACTIVATIONS.keys()),
     ]
 
@@ -20,8 +19,7 @@ class CNNGene(BaseGene):
     _gene_attributes = get_attributes(CNNCell)
 
     def distance(self, other, config):
-        if (self.operation != other.operation or
-                self.kernel_size != other.kernel_size):
+        if self.operation != other.operation:
             return 1.0*config.compatibility_weight_coefficient
         else:
             return 0.0
@@ -43,7 +41,7 @@ class TransformerGene(BaseGene):
 
     def distance(self, other, config):
         if (self.operation != other.operation or
-                self.kernel_size != other.kernel_size):
+                self.activation != other.activation):
             return 1.0*config.compatibility_weight_coefficient
         else:
             return 0.0

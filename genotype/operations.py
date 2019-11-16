@@ -1,7 +1,12 @@
+from functools import partial
+import torch
 import torch.nn as nn
 
 __all__ = ['none', 'identity']
-__all__ += ['sep_conv', 'dil_conv', 'max_pool', 'avg_pool']
+__all__ += ['sep_conv_1', 'sep_conv_3', 'sep_conv_5']
+__all__ += ['dil_conv_1', 'dil_conv_3', 'dil_conv_5']
+__all__ += ['max_pool_3', 'max_pool_5']
+__all__ += ['avg_pool_3', 'avg_pool_5']
 __all__ += ['attention']
 
 
@@ -33,11 +38,26 @@ class MultiheadAttention(nn.Module):
         return out.transpose(0, 1)
 
 
-def identity(size, ks):
+class DropPath(nn.Module):
+    def __init__(self, p=0.0):
+        super().__init__()
+        self.p = p
+
+    def extra_repr(self):
+        return 'p={}, inplace'.format(self.p)
+
+    def forward(self, x):
+        if self.train and self.p > 0:
+            mask = torch.zeros_like(x).bernoulli_(1 - self.p)
+            x.div_(1 - self.p).mul_(mask)
+        return x
+
+
+def identity(size):
     return Identity()
 
 
-def none(size, ks):
+def none(size):
     return Zero()
 
 
@@ -58,6 +78,11 @@ def sep_conv(size, ks):
         raise NotImplementedError
 
 
+sep_conv_1 = partial(sep_conv, ks=1)
+sep_conv_3 = partial(sep_conv, ks=3)
+sep_conv_5 = partial(sep_conv, ks=5)
+
+
 def dil_conv(size, ks):
     C = size[0]
     D = len(size) - 1
@@ -75,6 +100,11 @@ def dil_conv(size, ks):
         raise NotImplementedError
 
 
+dil_conv_1 = partial(dil_conv, ks=1)
+dil_conv_3 = partial(dil_conv, ks=3)
+dil_conv_5 = partial(dil_conv, ks=5)
+
+
 def max_pool(size, ks):
     D = len(size) - 1
     if D == 1:
@@ -83,6 +113,10 @@ def max_pool(size, ks):
         return nn.MaxPool2d(ks, 1, padding=ks//2)
     else:
         raise NotImplementedError
+
+
+max_pool_3 = partial(max_pool, ks=3)
+max_pool_5 = partial(max_pool, ks=5)
 
 
 def avg_pool(size, ks):
@@ -95,7 +129,11 @@ def avg_pool(size, ks):
         raise NotImplementedError
 
 
-def attention(size, ks):
+avg_pool_3 = partial(avg_pool, ks=3)
+avg_pool_5 = partial(avg_pool, ks=5)
+
+
+def attention(size):
     C = size[-1]
     D = len(size) - 1
     if D == 1:

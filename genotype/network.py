@@ -19,10 +19,10 @@ class FeedForward(nn.Module):
 
 
 class Recurrent(nn.Module):
-    def __init__(self, stem, cells, classifier):
+    def __init__(self, stem, cell, classifier):
         super().__init__()
         self.stem = deepcopy(stem)
-        self.cells = deepcopy(cells)
+        self.cell = deepcopy(cell)
         self.classifier = deepcopy(classifier)
 
     def forward(self, x):
@@ -30,7 +30,6 @@ class Recurrent(nn.Module):
         xs = xs.view(*xs.shape, 1)
         h = torch.zeros_like(xs[0])
         for x in xs:
-            for cell in self.cells:
-                h = cell(x, h)
+            h = self.cell(x, h)
         out = h.view(h.size(0), -1)
         return self.classifier(out)
