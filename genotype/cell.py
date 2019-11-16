@@ -157,6 +157,4 @@ class TransformerCell(CNNCell):
     ACTIVATIONS = {
         '0': ops.Identity(),
         '1': nn.ReLU(),
-        '2': nn.Sigmoid(),
-        '3': nn.Tanh(),
     }
