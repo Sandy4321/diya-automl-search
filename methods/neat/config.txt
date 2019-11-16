@@ -25,17 +25,12 @@ aggregation_options     = 0
 # operation options
 operation_default     = random
 operation_mutate_rate = 0.2
-operation_options     = 0 1 2 3 5
-
-# kernel_size options
-kernel_size_default     = random
-kernel_size_mutate_rate = 0.2
-kernel_size_options     = 0 1 2
+operation_options     = 00 01 02 03 04 05 06 07 08 09 10 11
 
 # activation options
 activation_default      = random
 activation_mutate_rate  = 0.2
-activation_options      = 0 3
+activation_options      = 0 1
 
 # genome compatibility options
 compatibility_disjoint_coefficient = 1.0
@@ -53,8 +48,8 @@ feed_forward            = True
 initial_connection      = full
 
 # node add/remove rates
-node_add_prob           = 0.2
-node_delete_prob        = 0.2
+node_add_prob           = 0.5
+node_delete_prob        = 0.5
 
 # network parameters
 num_hidden              = 0
@@ -79,12 +74,7 @@ aggregation_options     = 0 1
 # operation options
 operation_default     = random
 operation_mutate_rate = 0.2
-operation_options     = 0 5
-
-# kernel_size options
-kernel_size_default     = 0
-kernel_size_mutate_rate = 0.0
-kernel_size_options     = 0
+operation_options     = 00 01 02
 
 # activation options
 activation_default      = random
@@ -107,8 +97,8 @@ feed_forward            = True
 initial_connection      = full
 
 # node add/remove rates
-node_add_prob           = 0.2
-node_delete_prob        = 0.2
+node_add_prob           = 0.5
+node_delete_prob        = 0.5
 
 # network parameters
 num_hidden              = 0
@@ -133,17 +123,12 @@ aggregation_options     = 0
 # operation options
 operation_default     = random
 operation_mutate_rate = 0.2
-operation_options     = 0 1 4 5
-
-# kernel_size options
-kernel_size_default     = random
-kernel_size_mutate_rate = 0.2
-kernel_size_options     = 0 1 2
+operation_options     = 00 01 02 03 04 05 06 07 08 09 10 11 12
 
 # activation options
 activation_default      = random
 activation_mutate_rate  = 0.2
-activation_options      = 0 1 2 3
+activation_options      = 0 1
 
 # genome compatibility options
 compatibility_disjoint_coefficient = 1.0
@@ -161,8 +146,8 @@ feed_forward            = True
 initial_connection      = full
 
 # node add/remove rates
-node_add_prob           = 0.2
-node_delete_prob        = 0.2
+node_add_prob           = 0.5
+node_delete_prob        = 0.5
 
 # network parameters
 num_hidden              = 0
