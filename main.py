@@ -54,6 +54,17 @@ def train(args):
             common.save_model(model, path)
 
 
+def draw(args):
+    from utils.visualize import draw_genome
+    assert args.checkpoint is not None
+    assert args.checkpoint[-3:] == 'txt'
+
+    path = os.path.join(settings.PROJECT_ROOT, settings.LOAD_DIR)
+    with open(os.path.join(path, args.checkpoint), 'r') as f:
+        genome = f.readlines()
+    draw_genome(args.type, genome)
+
+
 def test(args):
     pass
 

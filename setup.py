@@ -11,6 +11,7 @@ setup(
         'termcolor',
         'neat-python',
         'networkx',
-        'nltk'
+        'nltk',
+        'pygraphviz'
     ]
 )
